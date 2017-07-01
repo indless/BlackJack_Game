@@ -1,20 +1,28 @@
 class Hand(object):
-    def __init__(self, bet):
+    def __init__(self, bet, identity=0):
         self.bet = bet
         self.hand = []
         self.cardValue = {'Ace': 11, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7,
                           '8': 8, '9': 9, '10': 10, 'Jack': 10, 'Queen': 10, 'King': 10}
+        self.player_identity = identity
         self.handValue = 0
         self.aces = 0
         self.bust = False
         self.standing = False
         self.multiplier = 2
 
-    def starting_hand(self, a=(), b=()):
-        self.hand.append(a)
-        self.hand.append(b)
+    #def starting_hand(self, a=(), b=()):
+    #    self.hand.append(a)
+    #    self.hand.append(b)
+
+    def get_card(self, num= 1):
+        if len(self.hand) >= num:
+            return self.hand[num]
 
     def get_hand_value(self):
+        return self.handValue
+
+    def update_hand_value(self):
         self.handValue = 0
         for c in self.hand:
             self.handValue += self.cardValue[self.hand[c][0]]
@@ -35,6 +43,9 @@ class Hand(object):
             self.get_hand_value()
             if self.handValue == 21:
                 self.multiplier = 2.5
+                self.standing = True
+                return True
+        return False
 
     def can_split(self):
         if self.hand[0][0] == self.hand[1][0]:
@@ -54,7 +65,7 @@ class Hand(object):
         self.get_hand_value()
 
     def payout(self, multiplier):
-        self.bet *= multiplier
+        return self.bet * multiplier
 
     def loss(self):
         self.bet -= self.bet
