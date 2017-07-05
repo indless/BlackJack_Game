@@ -10,8 +10,8 @@ class Player(object):
         self.bet = 0
 
     def set_name(self):
-        self.name = input('Hello player #{i}! What is your name? '.format(self.identity + 1))
-        print('Nice to meet you {name]!'.format(name=self.name))
+        self.name = input('Hello player #{i}! What is your name? '.format(i=self.identity + 1))
+        print('Nice to meet you {name}!'.format(name=self.name))
 
     def get_name(self):
         return self.name
@@ -25,7 +25,7 @@ class Player(object):
     def withdraw(self, withdraw):
         self.bank -= withdraw
 
-    def bet(self):
+    def make_bet(self):
         while not self.input.isnumeric():
             self.input = input('Current balance ${b} '
                                '\nHow much would you like to bet? '.format(b=self.balance()))

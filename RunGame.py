@@ -1,12 +1,7 @@
-import Player, Dealer
+import Dealer
 
 
-class PlayBlackJack(object):
+the_dealer = Dealer()
+while the_dealer.another_round:
+    the_dealer.deal_round()
 
-    def __init__(self):
-        pass
-
-    this_player = Player()
-    the_dealer = Dealer()
-    while this_player.keep_playing:
-        pass
