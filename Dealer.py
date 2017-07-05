@@ -66,7 +66,6 @@ class Dealer(object):
 
         # player(s) turn
         for h in self.player_hands:
-            print(h.hand)
             if h.black_jack():
                 print('Black-Jack!!!')
                 self.hand_wins(h)
@@ -109,10 +108,11 @@ class Dealer(object):
         # player plays hand
         self.input = ''
         while self.input not in 'hit double split stand'.split():
+            print(hand.hand)
             self.input = input('{name}, you have {hv}, what would you like to do? (hit, double, split or stand)'
                                .format(name=self.player_list[hand.player_identity].get_name(),
                                        hv=hand.get_hand_value())).lower()
-            self.make_player_move(hand)
+        self.make_player_move(hand)
 
         # Player stands or busts
         if hand.bust:
