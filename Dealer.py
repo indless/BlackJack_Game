@@ -70,11 +70,12 @@ class Dealer(object):
                 print('Black-Jack!!!')
                 self.hand_wins(h)
             else:
-                while not h.standing or not h.bust:
+                while not h.standing and not h.bust:
                     self.get_player_move(h)
 
         # dealer's turn
         self.dealer_plays_hand()
+        print(self.dealer_hand.hand)
 
         # determine winning player hands & make payouts
         for h in self.player_hands:
@@ -91,17 +92,24 @@ class Dealer(object):
     def hand_loses(self, hand):
         hand.bust = True
         hand.loss()
-        print('Sorry {name}, dealer has Black-Jack. You lost this hand.'.format(name=self.player_list[hand.palyer_identity]))
+        if self.dealer_hand.black_jack():
+            print('Sorry {name}, dealer has Black-Jack. You lost this hand.'
+                  .format(name=self.player_list[hand.player_identity].name))
+        else:
+            print('Sorry {name}, dealer has {dhv}, you have {phv}. You lost this hand.'
+                  .format(name=self.player_list[hand.player_identity].name,
+                          dhv=self.dealer_hand.get_hand_value(),
+                          phv=hand.get_hand_value()))
 
     def push(self, hand):
         # player ties with dealer, return bet to player
         self.player_list[hand.player_identity].deposit(hand.bet)
-        print('It\'s a Push. Your bet of ${bet} was returned.'.format(name=self.player_list[hand.palyer_identity],
-                                                                  bet=hand.bet))
+        print('It\'s a Push. Your bet of ${bet} was returned.'.format(name=self.player_list[hand.player_identity],
+                                                                      bet=hand.bet))
 
     def hand_wins(self, hand):
         self.player_list[hand.player_identity].deposit(hand.payout())
-        print('Congratulations {name}, you won ${payout}!'.format(name=self.player_list[hand.palyer_identity],
+        print('Congratulations {name}, you won ${payout}!'.format(name=self.player_list[hand.player_identity],
                                                                   payout=hand.payout()))
 
     def get_player_move(self, hand):
@@ -116,8 +124,10 @@ class Dealer(object):
 
         # Player stands or busts
         if hand.bust:
+            print(hand.hand)
             print('{hv}, Busted!'.format(hv=hand.get_hand_value()))
-        else:
+        elif hand.standing:
+            print(hand.hand)
             print('Standing with {hv}'.format(hv=hand.get_hand_value()))
 
     def make_player_move(self, hand):
@@ -125,7 +135,9 @@ class Dealer(object):
             self.hit(hand)
         elif self.input == 'double':
             # if self.player_list[hand.player_identity].balance() >= hand.bet:
-            if self.player_list[hand.player_identity].bank >= hand.bet:
+            # if self.player_list[hand.player_identity].bank >= hand.bet:
+            # if self.starting_bankroll >= hand.bet:
+            if True:
                 self.double(hand)
             else:
                 print('Insufficient funds, unable to double bet')

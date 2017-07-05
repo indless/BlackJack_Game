@@ -1,6 +1,6 @@
 class Hand(object):
-    def __init__(self, bet=0, identity=0):
-        self.bet = bet
+    def __init__(self, player_bet=0, identity=0):
+        self.bet_this = player_bet
         self.hand = []
         self.cardValue = {'Ace': 11, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7,
                           '8': 8, '9': 9, '10': 10, 'Jack': 10, 'Queen': 10, 'King': 10}
@@ -42,6 +42,7 @@ class Hand(object):
             self.aces = self.hand.count('Ace')
         else:
             self.aces = 0
+        return self.aces
 
     def black_jack(self):
         if len(self.hand) == 2:
@@ -69,14 +70,14 @@ class Hand(object):
         self.standing = True
         self.update_hand_value()
 
-    def payout(self, multiplier):
-        return self.bet * multiplier
+    def payout(self):
+        return self.bet_this * self.multiplier
 
     def loss(self):
-        self.bet -= self.bet
+        self.bet_this = 0
 
     def double(self, a=()):
-        self.bet += self.bet
+        self.bet_this = self.bet_this*2
         self.hit(a)
         self.stand()
 
