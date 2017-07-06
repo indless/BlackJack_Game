@@ -36,8 +36,9 @@ class Dealer(object):
             p.make_bet()
 
         # identify each hand to the corresponding player and bet value and deal first card
+        self.player_hands = []
         for p in self.player_list:
-            self.player_hands.append(Hand(p.get_bet, p.identity))
+            self.player_hands.append(Hand(p.get_bet(), p.identity))
             self.player_hands[p.identity].hit(self.the_deck.next_card())
         # gives dealer first card
         self.dealer_hand = Hand(0, -1)
@@ -67,27 +68,56 @@ class Dealer(object):
         # player(s) turn
         for h in self.player_hands:
             if h.black_jack():
+                print(h.hand)
                 print('Black-Jack!!!')
-                self.hand_wins(h)
+                # hbet = h.payout()
+                print('Congratulations {name}, '
+                      'you won ${payout}!'.format(name=self.player_list[h.player_identity].name,
+                                                  payout=h.payout()))
             else:
                 while not h.standing and not h.bust:
                     self.get_player_move(h)
 
-        # dealer's turn
-        self.dealer_plays_hand()
-        print(self.dealer_hand.hand)
+        try:
+            # dealer's turn
+            self.dealer_plays_hand()
+            print('Dealers Hand: ')
+            print(self.dealer_hand.hand)
+        except:
+            print('error playing dealer hand')
+        finally:
+            print('played dealer hand')
 
-        # determine winning player hands & make payouts
-        for h in self.player_hands:
-            if h.get_hand_value() > self.dealer_hand.get_hand_value():
-                self.hand_wins(h)
-            elif h.get_hand_value() == self.dealer_hand.get_hand_value():
-                self.push(h)
-            else:
-                self.hand_loses(h)
+        try:
+            # determine winning player hands & make payouts
+            for h in self.player_hands:
+                if (h.get_hand_value() > self.dealer_hand.get_hand_value() and not h.bust) or h.black_jack():
+                # if (phv > dhv and not hbust) or hblack:
+                    print('looks like a winning hand')
+                    self.hand_wins(h)
+                elif h.get_hand_value() == self.dealer_hand.get_hand_value() and not h.bust:
+                # elif phv == dhv and not hbust:
+                    print('looks like a push')
+                    self.push(h)
+                else:
+                    print('looks like a losing hand')
+                    self.hand_loses(h)
+        except:
+            print('error determining winning hands')
+        finally:
+            print('determined winning hands')
 
         # allows only one hand to be played
-        self.another_round = False
+        self.play_another_round()
+
+    def play_another_round(self):
+        self.input = ''
+        while self.input not in 'yes no 1 2'.split():
+            self.input = input('Play another round? (yes/no) ')
+        if self.input in 'yes 1'.split():
+            self.another_round = True
+        else:
+            self.another_round = False
 
     def hand_loses(self, hand):
         hand.bust = True
@@ -104,18 +134,21 @@ class Dealer(object):
     def push(self, hand):
         # player ties with dealer, return bet to player
         self.player_list[hand.player_identity].deposit(hand.bet)
-        print('It\'s a Push. Your bet of ${bet} was returned.'.format(name=self.player_list[hand.player_identity],
-                                                                      bet=hand.bet))
+        print('It\'s a Push. '
+              'Your bet of ${bet} was returned.'.format(name=self.player_list[hand.player_identity].name,
+                                                        bet=hand.bet))
 
     def hand_wins(self, hand):
         self.player_list[hand.player_identity].deposit(hand.payout())
-        print('Congratulations {name}, you won ${payout}!'.format(name=self.player_list[hand.player_identity],
-                                                                  payout=hand.payout()))
+        print('Congratulations {name}, '
+              'you won ${payout}!'.format(name=self.player_list[hand.player_identity].name,
+                                          payout=hand.payout()))
 
     def get_player_move(self, hand):
         # player plays hand
         self.input = ''
         while self.input not in 'hit double split stand'.split():
+            print('Dealer showing {dh}'.format(dh=self.dealer_visible_card))
             print(hand.hand)
             self.input = input('{name}, you have {hv}, what would you like to do? (hit, double, split or stand)'
                                .format(name=self.player_list[hand.player_identity].get_name(),
@@ -132,13 +165,11 @@ class Dealer(object):
 
     def make_player_move(self, hand):
         if self.input == 'hit':
-            self.hit(hand)
+            # self.hit(hand)
+            hand.hit(self.the_deck.next_card())
         elif self.input == 'double':
-            # if self.player_list[hand.player_identity].balance() >= hand.bet:
-            # if self.player_list[hand.player_identity].bank >= hand.bet:
-            # if self.starting_bankroll >= hand.bet:
-            if True:
-                self.double(hand)
+            if self.player_list[hand.player_identity].balance() >= hand.bet:
+                hand.double(self.the_deck.next_card())
             else:
                 print('Insufficient funds, unable to double bet')
         elif self.input == 'split':
@@ -147,7 +178,8 @@ class Dealer(object):
             else:
                 print('Insufficient funds, unable to split hand')
         elif self.input == 'stand':
-            self.stand(hand)
+            # self.stand(hand)
+            hand.stand()
 
     def dealer_plays_hand(self):
         # dealer plays hand
@@ -162,8 +194,9 @@ class Dealer(object):
         # split hand when identical value cards
         split_hand = Hand(hand.bet, hand.player_identity)
         # insert new hand into self.player_hands at current index +1 & copy Hand.identity to new hand
-        # will need to also withdraw BET amount from Player bankroll equal to Hand.bet
         self.player_hands.insert(self.player_hands.index(hand)+1, split_hand)
+        # will need to also withdraw BET amount from Player bankroll equal to Hand.bet
+        self.player_list[hand.player_identity].withdraw(hand.bet)
 
         # inserts one of the cards from 'hand' into 'split_hand'
         split_hand.hit(hand.split())

@@ -1,6 +1,9 @@
+# from collections import Counter
+
+
 class Hand(object):
     def __init__(self, player_bet=0, identity=0):
-        self.bet_this = player_bet
+        self.bet = player_bet
         self.hand = []
         self.cardValue = {'Ace': 11, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7,
                           '8': 8, '9': 9, '10': 10, 'Jack': 10, 'Queen': 10, 'King': 10}
@@ -15,21 +18,23 @@ class Hand(object):
     #    self.hand.append(a)
     #    self.hand.append(b)
 
+    def get_bet(self):
+        return self.bet
+
     def get_card(self, num=1):
         if len(self.hand) >= num:
             return self.hand[num]
 
     def get_hand_value(self):
-        self.update_hand_value()
+        # self.update_hand_value()
         return self.handValue
 
     def update_hand_value(self):
         self.handValue = 0
         for c in self.hand:
-            # print(c[0])
             self.handValue += self.cardValue[c[0]]
         if self.handValue > 21:
-            for a in range(self.count_aces()):
+            for a in range(self.aces):
                 self.handValue -= 10
                 if self.handValue <= 21:
                     break
@@ -37,12 +42,15 @@ class Hand(object):
             self.bust = True
             self.loss()
 
+    '''
     def count_aces(self):
-        if self.hand.count('Ace') > 0:
-            self.aces = self.hand.count('Ace')
+        # if self.hand.count('Ace') > 0:
+        if Counter([x for (x, y) in self.hand if x == 'Ace']) > 0:
+            self.aces = Counter([x for (x, y) in self.hand if x == 'Ace'])  # self.hand.count('Ace')
         else:
             self.aces = 0
         return self.aces
+    '''
 
     def black_jack(self):
         if len(self.hand) == 2:
@@ -59,25 +67,29 @@ class Hand(object):
         else:
             return False
 
-    def split_hand(self):
+    def split(self):
+        if self.aces > 0:
+            self.aces -= 1
         return self.hand.pop()
 
     def hit(self, a=()):
+        if a[0] == 'Ace':
+            self.aces += 1
         self.hand.append(a)
         self.update_hand_value()
 
     def stand(self):
         self.standing = True
-        self.update_hand_value()
+        # self.update_hand_value()
 
     def payout(self):
-        return self.bet_this * self.multiplier
+        return self.bet * self.multiplier
 
     def loss(self):
-        self.bet_this = 0
+        self.bet = 0
 
     def double(self, a=()):
-        self.bet_this = self.bet_this*2
+        self.bet *= 2
         self.hit(a)
         self.stand()
 

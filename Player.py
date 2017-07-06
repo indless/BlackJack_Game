@@ -1,6 +1,6 @@
 class Player(object):
 
-    def __init__(self, bank, identity=0):
+    def __init__(self, bank=100, identity=0):
         self.hand_history = []
         self.input = ''
         self.bank = bank
