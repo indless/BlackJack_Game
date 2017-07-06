@@ -1,4 +1,4 @@
-import Dealer
+from Dealer import Dealer
 
 
 the_dealer = Dealer()

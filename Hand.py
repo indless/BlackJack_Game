@@ -1,6 +1,3 @@
-# from collections import Counter
-
-
 class Hand(object):
     def __init__(self, player_bet=0, identity=0):
         self.bet = player_bet
@@ -10,13 +7,10 @@ class Hand(object):
         self.player_identity = identity
         self.handValue = 0
         self.aces = 0
+        self.soft_aces = 0
         self.bust = False
         self.standing = False
         self.multiplier = 2
-
-    #def starting_hand(self, a=(), b=()):
-    #    self.hand.append(a)
-    #    self.hand.append(b)
 
     def get_bet(self):
         return self.bet
@@ -31,26 +25,24 @@ class Hand(object):
 
     def update_hand_value(self):
         self.handValue = 0
+        self.soft_aces = self.aces
         for c in self.hand:
             self.handValue += self.cardValue[c[0]]
         if self.handValue > 21:
             for a in range(self.aces):
                 self.handValue -= 10
+                self.soft_aces -= 1
                 if self.handValue <= 21:
                     break
         if self.handValue > 21:
             self.bust = True
             self.loss()
 
-    '''
-    def count_aces(self):
-        # if self.hand.count('Ace') > 0:
-        if Counter([x for (x, y) in self.hand if x == 'Ace']) > 0:
-            self.aces = Counter([x for (x, y) in self.hand if x == 'Ace'])  # self.hand.count('Ace')
+    def is_hand_soft(self):
+        if self.soft_aces > 0:
+            return True
         else:
-            self.aces = 0
-        return self.aces
-    '''
+            return False
 
     def black_jack(self):
         if len(self.hand) == 2:
