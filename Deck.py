@@ -23,3 +23,5 @@ class Deck(object):
     def next_card(self):
         return self.deck_shuffled.pop()
 
+    def cards_remaining(self):
+        return len(self.deck)

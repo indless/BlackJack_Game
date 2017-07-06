@@ -26,10 +26,15 @@ class Player(object):
         self.bank -= withdraw
 
     def make_bet(self):
-        while not self.input.isnumeric():
-            self.input = input('Current balance ${b} '
-                               '\nHow much would you like to bet? '.format(b=self.balance()))
-        self.bet = int(self.input)
+        self.input = ''
+        self.bet = 0
+        while True:
+            while not self.input.isnumeric():
+                self.input = input('Current balance ${b} '
+                                   '\nHow much would you like to bet? '.format(b=self.balance()))
+            self.bet = int(self.input)
+            if self.bet <= self.bank:
+                break
 
     def get_bet(self):
         self.withdraw(self.bet)

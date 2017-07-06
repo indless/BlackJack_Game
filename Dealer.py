@@ -30,10 +30,18 @@ class Dealer(object):
             self.player_list.append(Player(self.starting_bankroll, p))
             self.player_list[p].set_name()
 
+    def new_deck(self):
+        self.the_deck = Deck()
+        self.the_deck.shuffle()
+
     def deal_round(self):
         # get player bets
         for p in self.player_list:
             p.make_bet()
+
+        # shuffle deck if less than 20 cards
+        if self.the_deck.cards_remaining() < 20:
+            self.new_deck()
 
         # identify each hand to the corresponding player and bet value and deal first card
         self.player_hands = []
@@ -57,6 +65,7 @@ class Dealer(object):
             if self.dealer_hand.black_jack():
                 print('Dealer Black-Jack! Dealer Wins!')
                 for h in self.player_hands:
+                    print(h.hand)
                     if not h.black_jack():
                         self.hand_loses(h)
                     else:
@@ -70,7 +79,6 @@ class Dealer(object):
             if h.black_jack():
                 print(h.hand)
                 print('Black-Jack!!!')
-                # hbet = h.payout()
                 print('Congratulations {name}, '
                       'you won ${payout}!'.format(name=self.player_list[h.player_identity].name,
                                                   payout=h.payout()))
@@ -88,24 +96,17 @@ class Dealer(object):
         finally:
             print('played dealer hand')
 
-        try:
-            # determine winning player hands & make payouts
-            for h in self.player_hands:
-                if (h.get_hand_value() > self.dealer_hand.get_hand_value() and not h.bust) or h.black_jack():
-                # if (phv > dhv and not hbust) or hblack:
-                    print('looks like a winning hand')
-                    self.hand_wins(h)
-                elif h.get_hand_value() == self.dealer_hand.get_hand_value() and not h.bust:
-                # elif phv == dhv and not hbust:
-                    print('looks like a push')
-                    self.push(h)
-                else:
-                    print('looks like a losing hand')
-                    self.hand_loses(h)
-        except:
-            print('error determining winning hands')
-        finally:
-            print('determined winning hands')
+        # determine winning player hands & make payouts
+        for h in self.player_hands:
+            if (h.get_hand_value() > self.dealer_hand.get_hand_value() and not h.bust) or h.black_jack():
+                # print('looks like a winning hand')
+                self.hand_wins(h)
+            elif h.get_hand_value() == self.dealer_hand.get_hand_value() and not h.bust:
+                # print('looks like a push')
+                self.push(h)
+            else:
+                # print('looks like a losing hand')
+                self.hand_loses(h)
 
         # allows only one hand to be played
         self.play_another_round()
@@ -125,6 +126,10 @@ class Dealer(object):
         if self.dealer_hand.black_jack():
             print('Sorry {name}, dealer has Black-Jack. You lost this hand.'
                   .format(name=self.player_list[hand.player_identity].name))
+        elif hand.get_hand_value() > 21:
+            print('Sorry {name}, dealer has {dhv}, you busted. You lost this hand.'
+                  .format(name=self.player_list[hand.player_identity].name,
+                          dhv=self.dealer_hand.get_hand_value()))
         else:
             print('Sorry {name}, dealer has {dhv}, you have {phv}. You lost this hand.'
                   .format(name=self.player_list[hand.player_identity].name,
@@ -141,8 +146,9 @@ class Dealer(object):
     def hand_wins(self, hand):
         self.player_list[hand.player_identity].deposit(hand.payout())
         print('Congratulations {name}, '
-              'you won ${payout}!'.format(name=self.player_list[hand.player_identity].name,
-                                          payout=hand.payout()))
+              'you won ${payout}! New balance: {bal} '.format(name=self.player_list[hand.player_identity].name,
+                                                              payout=hand.payout(),
+                                                              bal=self.player_list[hand.player_identity].balance()))
 
     def get_player_move(self, hand):
         # player plays hand
@@ -165,7 +171,6 @@ class Dealer(object):
 
     def make_player_move(self, hand):
         if self.input == 'hit':
-            # self.hit(hand)
             hand.hit(self.the_deck.next_card())
         elif self.input == 'double':
             if self.player_list[hand.player_identity].balance() >= hand.bet:
@@ -178,17 +183,12 @@ class Dealer(object):
             else:
                 print('Insufficient funds, unable to split hand')
         elif self.input == 'stand':
-            # self.stand(hand)
             hand.stand()
 
     def dealer_plays_hand(self):
         # dealer plays hand
         # dealer hits on 15 or soft 16, stands if greater
         pass
-
-    def hit(self, hand):
-        # take additional card
-        hand.hit(self.the_deck.next_card())
 
     def split(self, hand):
         # split hand when identical value cards
@@ -203,14 +203,6 @@ class Dealer(object):
         # give each hand a second card
         hand.hit(self.the_deck.next_card())
         split_hand.hit(self.the_deck.next_card())
-
-    def double(self, hand):
-        # double bet on current hand
-        hand.double(self.the_deck.next_card())
-
-    def stand(self, hand):
-        # stay with current hand
-        hand.stand()
 
     def remove_player(self):
         # if player bank = 0 after a round, or player bets 0 then
